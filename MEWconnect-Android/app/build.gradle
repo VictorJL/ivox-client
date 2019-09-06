@@ -39,8 +39,8 @@ android {
         buildConfigField "String", "APICCSWAP_API_KEY", "\"" + secretsProperties['apiccswapApiKey'] + "\""
         buildConfigField "String", "APICCSWAP_REFERER", "\"" + secretsProperties['apiccswapReferer'] + "\""
         buildConfigField "String", "RATES_API_END_POINT", "\"https://cryptorates.mewapi.io/\""
-        //buildConfigField "String", "IVOX_API_TOKEN_END_POINT", "\"https://ivox-ethereum.herokuapp.com\""
-        buildConfigField "String", "IVOX_API_TOKEN_END_POINT", "\"http://192.168.0.2:3000\""
+        buildConfigField "String", "IVOX_API_TOKEN_END_POINT", "\"https://ivox-ethereum.herokuapp.com\""
+        //buildConfigField "String", "IVOX_API_TOKEN_END_POINT", "\"http://192.168.0.2:3000\""
     }
     buildTypes {
         release {

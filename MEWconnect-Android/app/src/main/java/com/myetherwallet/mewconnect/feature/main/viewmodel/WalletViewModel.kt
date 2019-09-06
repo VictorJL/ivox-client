@@ -29,7 +29,6 @@ import javax.inject.Inject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -45,7 +44,8 @@ import java.io.IOException
  * Created by BArtWell on 28.08.2018.
  */
 
-private const val USD_SYMBOL = "ETH"
+const val ETH_SYMBOL = "ETH"
+const val MXN_SYMBOL = "MXN"
 
 class WalletViewModel
 @Inject constructor(application: Application, private val getWalletBalance: GetWalletBalance, private val getAllBalances: GetAllBalances, private val getTickerData: GetTickerData) : AndroidViewModel(application) {
@@ -103,12 +103,12 @@ class WalletViewModel
         }.execute()
     }
 
-    private class Collector(private var network: Network,
-                            private var walletAddress: String,
-                            private val getWalletBalance: GetWalletBalance,
-                            private val getAllBalances: GetAllBalances,
-                            private val getTickerData: GetTickerData,
-                            private val callback: (List<WalletListItem>, WalletBalance) -> Unit) {
+    class Collector(private var network: Network,
+                    private var walletAddress: String,
+                    private val getWalletBalance: GetWalletBalance,
+                    private val getAllBalances: GetAllBalances,
+                    private val getTickerData: GetTickerData,
+                    private val callback: (List<WalletListItem>, WalletBalance) -> Unit) {
 
         private var balances: List<Balance>? = null
         private var walletBalance: BigDecimal? = null
@@ -126,11 +126,14 @@ class WalletViewModel
         }
 
         private fun getBalance(){
+
             val json = JSONObject()
 
             val formatedEthereumAddress = "0x" + walletAddress
 
             json.put("account", formatedEthereumAddress)
+
+            json.put("network", network.apiMethod)
 
             val mediaType = MediaType.parse("application/json; charset=utf-8")
 
@@ -205,7 +208,7 @@ class WalletViewModel
         }
 
         private fun loadTickerData() {
-            val symbols = mutableListOf(USD_SYMBOL)
+            val symbols = mutableListOf(ETH_SYMBOL)
             balances?.let {
                 for (balance in it) {
                     symbols.add(balance.symbol)
@@ -215,9 +218,13 @@ class WalletViewModel
         }
 
         private fun getTicker(){
-            val formBody = FormBody.Builder()
-                    .add("convert", "MXN")
-                    .build()
+            val json = JSONObject()
+
+            json.put("tag", MXN_SYMBOL)
+
+            val mediaType = MediaType.parse("application/json; charset=utf-8")
+
+            val formBody = RequestBody.create(mediaType, json.toString())
 
             val parsedUrl = HttpUrl.parse(BuildConfig.IVOX_API_TOKEN_END_POINT)
 
@@ -225,8 +232,9 @@ class WalletViewModel
                                     .scheme(parsedUrl?.scheme())
                                     .host(parsedUrl?.host())
                                     .port(parsedUrl?.port()!!)
-                                    .addPathSegment("ethereum")
-                                    .addPathSegment("ticker")
+                                    .addPathSegment("api")
+                                    .addPathSegment("currency")
+                                    .addPathSegment("get")
                                     .build()
 
             val request = Request.Builder()
@@ -247,9 +255,9 @@ class WalletViewModel
 
                         val response = json.getJSONObject(0)
 
-                        val priceString = response.getString("ETH")
+                        val priceString = response.getString("rate")
 
-                        val tickerResponse = mapOf(USD_SYMBOL to BigDecimal(priceString))
+                        val tickerResponse = mapOf(ETH_SYMBOL to BigDecimal(priceString))
 
                         onTickerDataSuccess(tickerResponse)
 
@@ -283,7 +291,7 @@ class WalletViewModel
                 items.add(WalletListItem(name, balance.symbol, balance.calculateBalance(), valueUsd, stockPrice))
             }
 
-            val stockPrice = tickerData!![USD_SYMBOL]
+            val stockPrice = tickerData!![ETH_SYMBOL]
             val valueUsd = stockPrice?.multiply(walletBalance)
             callback(items, WalletBalance(walletBalance!!, valueUsd, stockPrice))
         }

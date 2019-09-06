@@ -22,15 +22,6 @@ import java.math.BigInteger
 import java.math.RoundingMode
 import javax.inject.Inject
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.FormBody
-import okhttp3.HttpUrl
-
-import okhttp3.Call
-import okhttp3.Callback
-
 import org.json.JSONObject
 import org.json.JSONArray
 import org.json.JSONException
@@ -61,13 +52,14 @@ import com.paypal.android.sdk.payments.PaymentConfirmation
 import android.os.Handler
 
 import com.myetherwallet.mewconnect.BuildConfig
+import okhttp3.*
 
 /**
  * Created by BArtWell on 12.09.2018.
  */
 
-private const val CURRENCY_USD = "MXN"
-private const val CURRENCY_ETH = "ETH"
+const val CURRENCY_MXN = "MXN"
+const val CURRENCY_ETH = "ETH"
 private const val ETH_DECIMALS = 8
 private val LIMIT_MIN = BigDecimal(50)
 private val LIMIT_MAX = BigDecimal(20000)
@@ -176,7 +168,7 @@ class BuyFragment : BaseViewModelFragment() {
         buy_button.setOnClickListener {
             buy_loading.visibility = VISIBLE
             /*viewModel.load(BigDecimal(getCurrentValue()),
-                    if (isInUsd) CURRENCY_USD else CURRENCY_ETH,
+                    if (isInUsd) CURRENCY_MXN else CURRENCY_ETH,
                     preferences.getCurrentWalletPreferences().getWalletAddress(),
                     preferences.applicationPreferences.getInstallTime(),
                     {
@@ -243,17 +235,24 @@ class BuyFragment : BaseViewModelFragment() {
                                  paymentPrice: String,
                                  paymentEthereum: String): PayPalPayment {
 
-        val payment = PayPalPayment(    BigDecimal(paymentPrice) + gasPrice,
+        val paymentTotal = BigDecimal(paymentPrice) + gasPrice
+
+        val payment = PayPalPayment(    paymentTotal,
                                         "MXN",
                                         paymentEthereum + " Ethereum",
                                         paymentIntent   )
 
         val customObject = JSONObject()
 
+        val network = preferences.applicationPreferences.getCurrentNetwork()
+
         val formatedEthereumAddress = "0x" + preferences.getCurrentWalletPreferences().getWalletAddress()
 
         customObject.put("address", formatedEthereumAddress)
         customObject.put("ether", paymentEthereum)
+        customObject.put("network", network.apiMethod)
+        customObject.put("currency", "MXN")
+        customObject.put("amount", paymentTotal.toString())
 
         payment.custom(customObject.toString())
 
@@ -312,19 +311,24 @@ class BuyFragment : BaseViewModelFragment() {
     }
 
     private fun getTicker(){
-        val formBody = FormBody.Builder()
-                                .add("convert", "MXN")
-                                .build()
+        val json = JSONObject()
+
+        json.put("tag", CURRENCY_MXN)
+
+        val mediaType = MediaType.parse("application/json; charset=utf-8")
+
+        val formBody = RequestBody.create(mediaType, json.toString())
 
         val parsedUrl = HttpUrl.parse(BuildConfig.IVOX_API_TOKEN_END_POINT)
 
         var builtUrl = HttpUrl.Builder()
-                            .scheme(parsedUrl?.scheme())
-                            .host(parsedUrl?.host())
-                            .port(parsedUrl?.port()!!)
-                            .addPathSegment("ethereum")
-                            .addPathSegment("ticker")
-                            .build()
+                                .scheme(parsedUrl?.scheme())
+                                .host(parsedUrl?.host())
+                                .port(parsedUrl?.port()!!)
+                                .addPathSegment("api")
+                                .addPathSegment("currency")
+                                .addPathSegment("get")
+                                .build()
 
         val request = Request.Builder()
                                 .url(builtUrl)
@@ -333,7 +337,8 @@ class BuyFragment : BaseViewModelFragment() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(cliall: Call, e: IOException) {
-                // TODO display error toast here
+                displayToast("An error occurred")
+                goBack()
             }
             override fun onResponse(call: Call, response: Response) {
 
@@ -344,8 +349,52 @@ class BuyFragment : BaseViewModelFragment() {
 
                     val response = json.getJSONObject(0)
 
-                    setPrice(response.getString("ETH"))
-                    setGasPrice(response.getString("GAS_PRICE"))
+                    setPrice(response.getString("rate"))
+                    getGas()
+
+                }catch (e: Exception) {
+                    displayToast("An error occurred")
+                    goBack()
+                }
+
+
+            }
+
+        })
+    }
+
+    private fun getGas(){
+        val parsedUrl = HttpUrl.parse(BuildConfig.IVOX_API_TOKEN_END_POINT)
+
+        var builtUrl = HttpUrl.Builder()
+                                .scheme(parsedUrl?.scheme())
+                                .host(parsedUrl?.host())
+                                .port(parsedUrl?.port()!!)
+                                .addPathSegment("api")
+                                .addPathSegment("gas")
+                                .addPathSegment("get")
+                                .build()
+
+        val request = Request.Builder()
+                                .url(builtUrl)
+                                .get()
+                                .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(cliall: Call, e: IOException) {
+                displayToast("An error occurred")
+                goBack()
+            }
+            override fun onResponse(call: Call, response: Response) {
+
+                try{
+                    var responseData = response.body()?.string()
+
+                    var json = JSONArray(responseData)
+
+                    val response = json.getJSONObject(0)
+
+                    setGasPrice(response.getString("price"))
 
                     enableButtons()
 
@@ -455,7 +504,7 @@ class BuyFragment : BaseViewModelFragment() {
 
     private fun populateCurrency() {
         if (isInUsd) {
-            buy_currency_1.text = CURRENCY_USD
+            buy_currency_1.text = CURRENCY_MXN
             buy_symbol_1.text = "$"
             buy_currency_2.text = CURRENCY_ETH
             buy_symbol_2.text = ""

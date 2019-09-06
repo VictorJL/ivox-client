@@ -83,7 +83,7 @@
             android:maxLines="1"
             android:textColor="@color/text_grey"
             android:textSize="@dimen/text_size_fixed_12sp"
-            tools:text="Ropsten" />
+            tools:text="Rinkeby" />
     </FrameLayout>
 
     <TextView
