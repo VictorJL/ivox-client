@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MEWсonnect</string>
+    <string name="app_name">IvoxWallet</string>
 
     <string name="password">Password</string>
     <string name="decline">Decline</string>
@@ -59,6 +59,7 @@
 
     <string name="wallet_card_currency_eth">ETH</string>
     <string name="wallet_card_currency_usd">USD</string>
+    <string name="wallet_card_currency_mxn">MXN</string>
     <string name="wallet_card_address_title">Your public Ethereum address</string>
     <string name="wallet_card_stock_price">\@ %.2f/%s</string>
     <string name="wallet_card_backup_title">Action required: not backed up</string>

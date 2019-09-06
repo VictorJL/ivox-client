@@ -93,11 +93,11 @@ class WalletCardView @JvmOverloads constructor(
         val fieldWidth = resources.getDimension(R.dimen.wallet_card_address_width)
         var text = HexUtils.withPrefix(address.toLowerCase())
         val paint = wallet_card_address.paint
-        do {
+        /*do {
             text = text.replace(ADDRESS_ELLIPSIS, "")
             val half = text.length / 2
             text = text.substring(0, half) + ADDRESS_ELLIPSIS + text.substring(half + 1)
-        } while (paint.measureText(text) > fieldWidth && text.length > 5)
+        } while (paint.measureText(text) > fieldWidth && text.length > 5)*/
         wallet_card_address.text = text
         wallet_card_address_icon.setOnClickListener { onShareClickListener?.invoke() }
     }

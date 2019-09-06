@@ -20,7 +20,7 @@ androidExtensions {
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.myetherwallet.mewconnect"
+        applicationId "com.ivox.wallet"
         minSdkVersion 23
         targetSdkVersion 28
         if (MICRO_VERSION == 0) {

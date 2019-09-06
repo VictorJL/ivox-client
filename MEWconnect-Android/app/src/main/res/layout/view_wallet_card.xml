@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:layout_gravity="center"
     tools:layout_height="260dp"
     tools:layout_width="410dp">
@@ -24,7 +24,7 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/wallet_card_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center">
 
         <ImageView
@@ -87,7 +87,7 @@
             android:layout_marginStart="@dimen/dimen_4dp"
             android:alpha="0.5"
             android:letterSpacing="0.01"
-            android:text="@string/wallet_card_currency_usd"
+            android:text="@string/wallet_card_currency_mxn"
             android:textColor="@color/text_white"
             android:textSize="@dimen/text_size_fixed_12sp"
             android:textStyle="bold"
@@ -135,8 +135,9 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.02"
-                android:maxLines="1"
+                android:maxLines="4"
                 android:textColor="@color/text_white"
+                android:textIsSelectable="true"
                 android:textSize="@dimen/text_size_fixed_22sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/wallet_card_address_title"
